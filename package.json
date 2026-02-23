@@ -8,7 +8,10 @@
     "dev": "nodemon src/server.js"
   },
   "keywords": ["contact-form", "api", "express", "sqlite", "nodemailer"],
-  "author": "",
+  "author": {
+    "name": "Serkanby",
+    "url": "https://serkanbayraktar.com/"
+  },
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

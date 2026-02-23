@@ -297,11 +297,11 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ## Developer
 
-**Serkan Bayraktar**
+**Serkanby**
 
-- 🌐 [serkanbayraktar.com](https://serkanbayraktar.com/)
-- 🐙 [GitHub — @Serkanbyx](https://github.com/Serkanbyx)
-- 📧 [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+- GitHub: [@Serkanbyx](https://github.com/Serkanbyx)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
 
 ## Acknowledgments
 
@@ -314,9 +314,9 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ## Contact
 
-- 🐛 [Open an Issue](https://github.com/Serkanbyx/s3.5_Contact-Form-API/issues)
-- 📧 [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
-- 🌐 [serkanbayraktar.com](https://serkanbayraktar.com/)
+- [Open an Issue](https://github.com/Serkanbyx/s3.5_Contact-Form-API/issues)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
 
 ---
 
