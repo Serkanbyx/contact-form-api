@@ -1,7 +1,9 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
 const config = require("./config/env");
+const swaggerSpec = require("./config/swagger");
 const { getDatabase, closeDatabase } = require("./db/database");
 const contactRoutes = require("./routes/contactRoutes");
 const errorHandler = require("./middlewares/errorHandler");
@@ -14,7 +16,9 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'"],
         "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https://validator.swagger.io"],
       },
     },
   })
@@ -29,6 +33,39 @@ app.get("/", (_req, res) => {
   res.send(getWelcomePage(version));
 });
 
+// ── Swagger UI ──────────────────────────────────────
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: "Contact Form API — Docs",
+  customCss: ".swagger-ui .topbar { display: none }",
+}));
+
+app.get("/api-docs.json", (_req, res) => {
+  res.json(swaggerSpec);
+});
+
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check
+ *     tags: [Health]
+ *     description: Returns the current server status and timestamp.
+ *     responses:
+ *       200:
+ *         description: Server is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "ok"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2026-02-23T12:00:00.000Z"
+ */
 // ── Health check ────────────────────────────────────
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -292,7 +329,8 @@ function getWelcomePage(version) {
     <p class="version">v${version}</p>
     <p class="desc">REST API for contact form submissions with email notifications and SQLite storage.</p>
     <div class="links">
-      <a href="/api/health" class="btn-primary">Health Check</a>
+      <a href="/api-docs" class="btn-primary">API Documentation</a>
+      <a href="/api/health" class="btn-secondary">Health Check</a>
       <a href="/api/contacts" class="btn-secondary">View Contacts</a>
     </div>
     <footer class="sign">
