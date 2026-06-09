@@ -15,6 +15,9 @@ data/
 *.log
 npm-debug.log*
 
+# Test coverage
+coverage/
+
 # OS files
 .DS_Store
 Thumbs.db

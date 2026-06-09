@@ -3,12 +3,18 @@ const contactRepository = require("../db/contactRepository");
 const { sendAdminNotification } = require("../services/mailService");
 const { validateContact } = require("../middlewares/validate");
 const { contactLimiter } = require("../middlewares/rateLimiter");
+const { requireApiKey } = require("../middlewares/auth");
 
 const router = Router();
 
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *     ApiKeyAuth:
+ *       type: apiKey
+ *       in: header
+ *       name: x-api-key
  *   schemas:
  *     Contact:
  *       type: object
@@ -150,7 +156,9 @@ router.post("/", contactLimiter, validateContact, async (req, res, next) => {
  *   get:
  *     summary: List all contacts
  *     tags: [Contacts]
- *     description: Returns a paginated list of all contact form submissions ordered by newest first.
+ *     description: Returns a paginated list of all contact form submissions ordered by newest first. Requires an API key.
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -183,8 +191,14 @@ router.post("/", contactLimiter, validateContact, async (req, res, next) => {
  *                         $ref: '#/components/schemas/Contact'
  *                     pagination:
  *                       $ref: '#/components/schemas/Pagination'
+ *       401:
+ *         description: Missing or invalid API key
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/", (req, res, next) => {
+router.get("/", requireApiKey, (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
@@ -206,7 +220,9 @@ router.get("/", (req, res, next) => {
  *   get:
  *     summary: Get a single contact
  *     tags: [Contacts]
- *     description: Returns a specific contact form submission by its ID.
+ *     description: Returns a specific contact form submission by its ID. Requires an API key.
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -226,6 +242,12 @@ router.get("/", (req, res, next) => {
  *                   properties:
  *                     data:
  *                       $ref: '#/components/schemas/Contact'
+ *       401:
+ *         description: Missing or invalid API key
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Contact not found
  *         content:
@@ -233,7 +255,7 @@ router.get("/", (req, res, next) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:id", (req, res, next) => {
+router.get("/:id", requireApiKey, (req, res, next) => {
   try {
     const contact = contactRepository.findById(req.params.id);
 
@@ -256,7 +278,9 @@ router.get("/:id", (req, res, next) => {
  *   delete:
  *     summary: Delete a contact
  *     tags: [Contacts]
- *     description: Permanently removes a contact form submission from the database.
+ *     description: Permanently removes a contact form submission from the database. Requires an API key.
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -277,6 +301,12 @@ router.get("/:id", (req, res, next) => {
  *                     message:
  *                       type: string
  *                       example: "Contact deleted successfully."
+ *       401:
+ *         description: Missing or invalid API key
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Contact not found
  *         content:
@@ -284,7 +314,7 @@ router.get("/:id", (req, res, next) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id", requireApiKey, (req, res, next) => {
   try {
     const deleted = contactRepository.deleteById(req.params.id);
 

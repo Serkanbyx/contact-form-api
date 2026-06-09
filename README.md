@@ -10,8 +10,10 @@ A production-ready REST API that receives contact form submissions, stores them 
 - **RESTful API Design**: Full CRUD endpoints for contact form submissions following REST conventions
 - **SQLite Database**: Lightweight, zero-configuration database with WAL mode for optimal performance
 - **Email Notifications**: Automatic admin email alerts on new submissions via Nodemailer (HTML & plain text)
+- **API Key Authentication**: Read/delete endpoints are protected by an `x-api-key` header with constant-time key comparison
 - **Rate Limiting**: IP-based request throttling to prevent spam and abuse (10 requests per 15 minutes)
 - **Input Validation**: Server-side validation for name, email format, and message length with sanitization
+- **XSS-safe Emails**: User-provided content is HTML-escaped before being embedded in notification emails
 - **Security Headers**: Helmet.js integration for HTTP security headers protection
 - **CORS Support**: Configurable cross-origin resource sharing for frontend integration
 - **Pagination**: Built-in pagination for listing contact submissions
@@ -48,8 +50,8 @@ A production-ready REST API that receives contact form submissions, stores them 
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/Serkanbyx/s3.5_Contact-Form-API.git
-cd s3.5_Contact-Form-API
+git clone https://github.com/Serkanbyx/contact-form-api.git
+cd contact-form-api
 ```
 
 2. **Install dependencies**
@@ -64,7 +66,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` with your SMTP credentials. Leave `SMTP_USER` and `SMTP_PASS` empty to auto-generate an [Ethereal](https://ethereal.email/) test account for development.
+Edit `.env` with your SMTP credentials. Leave `SMTP_USER` and `SMTP_PASS` empty to auto-generate an [Ethereal](https://ethereal.email/) test account for development. Set a strong `ADMIN_API_KEY` to enable the protected read/delete endpoints.
 
 4. **Start the server**
 
@@ -85,6 +87,18 @@ The server starts at `http://localhost:3000`.
 3. Use `GET /api/contacts` to retrieve all submissions with pagination
 4. Use `GET /api/contacts/:id` to retrieve a specific submission
 5. Use `DELETE /api/contacts/:id` to remove a submission
+
+## Testing
+
+The project uses **Jest** and **Supertest** for unit and integration tests. Tests run against an in-memory SQLite database with the mail service mocked, so no network or files are touched.
+
+```bash
+npm test
+```
+
+## Build Guide
+
+A step-by-step roadmap describing how this project was built — from backend foundation to deployment — is available in [docs/build-guide.md](docs/build-guide.md).
 
 ## API Endpoints
 
@@ -126,29 +140,35 @@ Content-Type: application/json
 }
 ```
 
-### List All Contacts
+### List All Contacts 🔒
 
 ```
 GET /api/contacts?page=1&limit=20
+x-api-key: <your-admin-api-key>
 ```
 
-Returns paginated list of all contact submissions.
+Returns paginated list of all contact submissions. **Requires an API key.**
 
-### Get Single Contact
+### Get Single Contact 🔒
 
 ```
 GET /api/contacts/:id
+x-api-key: <your-admin-api-key>
 ```
 
-Returns a specific contact submission by ID.
+Returns a specific contact submission by ID. **Requires an API key.**
 
-### Delete Contact
+### Delete Contact 🔒
 
 ```
 DELETE /api/contacts/:id
+x-api-key: <your-admin-api-key>
 ```
 
-Removes a contact submission from the database.
+Removes a contact submission from the database. **Requires an API key.**
+
+> 🔒 Endpoints marked with a lock require the `x-api-key` header to match the
+> `ADMIN_API_KEY` environment variable. Requests without a valid key receive a `401`.
 
 ## How It Works?
 
@@ -218,6 +238,16 @@ CORS_ORIGIN=*                  # Allow all origins
 CORS_ORIGIN=https://example.com  # Restrict to specific domain
 ```
 
+### Set the Admin API Key
+
+The read/delete endpoints require an API key. Generate a strong value and set it in `.env`:
+
+```env
+ADMIN_API_KEY=your-strong-random-key   # e.g. `openssl rand -hex 32`
+```
+
+> If `ADMIN_API_KEY` is left empty, the protected endpoints are disabled and return an error — they are never exposed unprotected.
+
 ### SMTP Configuration
 
 Configure your own SMTP provider:
@@ -237,11 +267,13 @@ ADMIN_EMAIL=admin@yourdomain.com
 ```
 src/
 ├── config/
-│   └── env.js                # Environment variables & configuration
+│   ├── env.js                # Environment variables & configuration
+│   └── swagger.js            # OpenAPI / Swagger specification
 ├── db/
 │   ├── database.js           # SQLite connection & migrations
 │   └── contactRepository.js  # Data access layer (CRUD)
 ├── middlewares/
+│   ├── auth.js               # API key authentication
 │   ├── errorHandler.js       # Global error handler
 │   ├── rateLimiter.js        # Rate limiting middleware
 │   └── validate.js           # Input validation
@@ -250,8 +282,14 @@ src/
 ├── services/
 │   └── mailService.js        # Nodemailer email service
 ├── utils/
-│   └── ApiError.js           # Custom error class
+│   ├── ApiError.js           # Custom error class
+│   └── escapeHtml.js         # HTML escaping helper (XSS-safe emails)
 └── server.js                 # App entry point
+tests/
+├── setupEnv.js               # Test environment configuration
+├── contacts.test.js          # Contact endpoint integration tests
+├── health.test.js            # Health & 404 tests
+└── escapeHtml.test.js        # Unit tests for HTML escaping
 ```
 
 ## Features in Detail
@@ -261,24 +299,29 @@ src/
 - ✅ RESTful CRUD API for contact submissions
 - ✅ SQLite database with WAL mode
 - ✅ Async email notifications with Nodemailer
-- ✅ IP-based rate limiting
+- ✅ XSS-safe HTML email rendering
+- ✅ API key authentication for admin endpoints
+- ✅ IP-based rate limiting (proxy-aware)
 - ✅ Input validation and sanitization
 - ✅ Security headers with Helmet
 - ✅ CORS configuration
 - ✅ Pagination support
 - ✅ Graceful shutdown handling
 - ✅ Ethereal email for development testing
+- ✅ Automated tests (Jest + Supertest)
 - ✅ Render.com deployment configuration
 
 ### Future Features
 
-- [ ] Authentication for admin endpoints (JWT)
+- [ ] JWT-based authentication with user accounts
 - [ ] Dashboard UI for viewing submissions
 - [ ] Webhook support for third-party integrations
 - [ ] File attachment support
 - [ ] Spam detection with honeypot fields
 
 ## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](.github/CONTRIBUTING.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md) before getting started. To report a vulnerability, see our [Security Policy](.github/SECURITY.md).
 
 1. **Fork** the repository
 2. **Create** your feature branch (`git checkout -b feat/amazing-feature`)
@@ -314,7 +357,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ## Contact
 
-- [Open an Issue](https://github.com/Serkanbyx/s3.5_Contact-Form-API/issues)
+- [Open an Issue](https://github.com/Serkanbyx/contact-form-api/issues)
 - Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
 - Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
 

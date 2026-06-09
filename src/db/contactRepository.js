@@ -21,7 +21,7 @@ const contactRepository = {
     const offset = (page - 1) * limit;
 
     const rows = db
-      .prepare("SELECT * FROM contacts ORDER BY created_at DESC LIMIT ? OFFSET ?")
+      .prepare("SELECT * FROM contacts ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?")
       .all(limit, offset);
 
     const { total } = db.prepare("SELECT COUNT(*) AS total FROM contacts").get();

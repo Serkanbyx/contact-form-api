@@ -27,6 +27,10 @@ const config = {
   cors: {
     origin: process.env.CORS_ORIGIN || "*",
   },
+
+  admin: {
+    apiKey: process.env.ADMIN_API_KEY || "",
+  },
 };
 
 module.exports = config;

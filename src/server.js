@@ -10,6 +10,10 @@ const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 
+// Trust the first proxy (e.g. Render/Heroku) so req.ip and rate limiting
+// use the real client IP from the X-Forwarded-For header.
+app.set("trust proxy", 1);
+
 // ── Security & parsing ──────────────────────────────
 app.use(
   helmet({
@@ -105,7 +109,10 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-start();
+// Only start the HTTP server when run directly (not when imported by tests).
+if (require.main === module) {
+  start();
+}
 
 function getWelcomePage(version) {
   return `<!DOCTYPE html>
@@ -331,7 +338,6 @@ function getWelcomePage(version) {
     <div class="links">
       <a href="/api-docs" class="btn-primary">API Documentation</a>
       <a href="/api/health" class="btn-secondary">Health Check</a>
-      <a href="/api/contacts" class="btn-secondary">View Contacts</a>
     </div>
     <footer class="sign">
       Created by

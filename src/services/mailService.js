@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const config = require("../config/env");
+const escapeHtml = require("../utils/escapeHtml");
 
 let transporter;
 
@@ -63,6 +64,10 @@ function buildPlainText({ name, email, message }) {
 }
 
 function buildHtml({ name, email, message }) {
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeMessage = escapeHtml(message);
+
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333; border-bottom: 2px solid #4f46e5; padding-bottom: 10px;">
@@ -71,17 +76,17 @@ function buildHtml({ name, email, message }) {
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
           <td style="padding: 8px; font-weight: bold; color: #555;">Name</td>
-          <td style="padding: 8px;">${name}</td>
+          <td style="padding: 8px;">${safeName}</td>
         </tr>
         <tr style="background: #f9fafb;">
           <td style="padding: 8px; font-weight: bold; color: #555;">Email</td>
           <td style="padding: 8px;">
-            <a href="mailto:${email}">${email}</a>
+            <a href="mailto:${safeEmail}">${safeEmail}</a>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; color: #555; vertical-align: top;">Message</td>
-          <td style="padding: 8px; white-space: pre-wrap;">${message}</td>
+          <td style="padding: 8px; white-space: pre-wrap;">${safeMessage}</td>
         </tr>
       </table>
     </div>

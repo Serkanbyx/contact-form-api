@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "test": "cross-env NODE_ENV=test jest --runInBand"
   },
   "keywords": [
     "contact-form",
@@ -18,7 +19,7 @@
     "name": "Serkanby",
     "url": "https://serkanbayraktar.com/"
   },
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -32,6 +33,9 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }
